@@ -12,6 +12,9 @@ typedef struct mbr_header {
   ushort  signature;
 };
 
+BitfieldRightToLeft();
+BitfieldDisablePadding();
+
 LittleEndian();
 
 FSeek(0);
