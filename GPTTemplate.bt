@@ -1,0 +1,93 @@
+//------------------------------------
+// Name: GPTTemplate.bt
+// Author: Martijn Bogaard
+// Revision: 1.0
+// Purpose: Parse a GPT Record on a harddisk
+//------------------------------------
+
+//placeholder MBR
+typedef struct mbr_header {
+  char    bootldr[446];
+  char    partitions[64];
+  ushort  signature;
+};
+
+LittleEndian();
+
+FSeek(0);
+mbr_header MBR;
+
+int DetectSectorSize () {
+    local char buffer[8];
+
+    ReadBytes(buffer, 200h, 8);
+
+    local int size = Strstr(buffer, "EFI PART");
+
+    if (size >= 0 ) {
+        return 200h;
+    }
+
+    ReadBytes(buffer, 1000h, 8);
+
+    local int size = Strstr(buffer, "EFI PART");
+
+    if (size >= 0 ) {
+        return 1000h;
+    }
+
+    Warning( "GPT header not found!" );
+    Exit(1);
+
+    return -1;
+}
+
+local int sectorSize = DetectSectorSize ();
+
+FSeek(sectorSize);
+
+typedef struct {
+  char   signature[8];
+  uint32 revision;
+  uint32 headerSize;
+  uint32 CRC32;
+  uint32 reserved;
+  uint64 current_lba;
+  uint64 backup_lba;
+  uint64 first_usable_lba;
+  uint64 last_usable_lba;
+  char   disk_guid[16];
+  uint64 start_lba_partition_entries;
+  uint32 amount_partition_entries;
+  uint32 size_partition_entry;
+  uint32 crc_partition_array;
+} gpt_header <size=SizeGPTHeader>;
+
+int SizeGPTHeader( gpt_header &r ) {
+  //return sectorSize - ReadUInt(startof(r)+12);
+    return sectorSize;
+}
+
+gpt_header GPT;
+
+typedef struct {
+  char    type_guid[16];
+  char    id_guid[16];
+  uint64  first_lba;
+  uint64  last_lba;
+  uint64  reserved_flags : 59;
+  uint16  flag_readonly : 1;
+  uint16  flag_reserved : 1;
+  uint16  flag_hidden : 1;
+  uint16  flag_no_automount : 1;
+  wchar_t name[36];
+} partion_entry <size=SizePartionEntry>;
+
+int SizePartionEntry( partion_entry &r ) {
+  //return sectorSize - ReadUInt(startof(r)+12);
+    return GPT.size_partition_entry;
+}
+
+FSeek(sectorSize * GPT.start_lba_partition_entries);
+
+partion_entry GPT_Partitions[GPT.amount_partition_entries];
