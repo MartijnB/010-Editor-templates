@@ -1,0 +1,373 @@
+//--------------------------------------
+//--- 010 Editor v6.0.1 Binary Template
+//
+// File:
+// Author:
+// Revision:
+// Purpose:
+//--------------------------------------
+
+// Load superblock at 0x400
+FSeek(0x400);
+
+typedef ubyte  __u8;
+typedef uint16 __u16;
+typedef uint32 __u32;
+typedef uint64 __u64;
+
+typedef ubyte  __le8;
+typedef uint16 __le16;
+typedef uint32 __le32;
+typedef uint64 __le64;
+
+typedef __u8 GUID[16] <read=GUID_Read>;
+
+string GUID_Read(GUID v) {
+    string s;   
+    SPrintf(s, "{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}", 
+            v[0], v[1], v[2], v[3], 
+            v[4], v[5],
+            v[6], v[7],
+            v[8], v[9],
+            v[10], v[11],
+            v[12], v[13], v[14], v[15]);
+    return s;
+}
+
+typedef struct {
+    ubyte	cleanly_umounted:1<name="Cleanly umounted">;
+    ubyte	errors_detected:1<name="Errors detected">;
+    ubyte	orphans_being_recovered:1<name="Orphans being recovered">;
+
+    ubyte	INCOMPAT_NOT_USED:3<hidden=true>;
+    ubyte   reserved<hidden=true>;
+} t_sb_state;
+
+enum<__le16> t_sb_errors { 
+    CONTINUE = 1, 
+    REMOUNT_RO, 
+    PANIC
+};
+
+enum<__le32> t_sb_creator_OS { 
+    Linux = 0, 
+    Hurd, 
+    Masix,
+    FreeBSD,
+    Lites
+};
+
+enum<__le32> t_sb_rev_level { 
+    Original = 0, 
+    V2_Format_with_dynamic_inode_sizes
+};
+
+typedef struct {
+    ubyte	COMPAT_DIR_PREALLOC:1<name="Directory preallocation">;
+    ubyte	COMPAT_IMAGIC_INODES:1<name="Imagic Inodes">;
+    ubyte	COMPAT_HAS_JOURNAL:1<name="Has a journal">;
+    ubyte	COMPAT_EXT_ATTR:1<name="Supports extended attributes ">;
+    ubyte	COMPAT_RESIZE_INODE:1<name="Has reserved GDT blocks">;
+    ubyte	COMPAT_DIR_INDEX:1<name="Has directory indices">;
+    ubyte	COMPAT_LAZY_BG:1<name="Lazy BG">;
+    ubyte	COMPAT_EXCLUDE_INODE:1<name="Exclude inode">;
+    ubyte	COMPAT_EXCLUDE_BITMAP:1<name="Exclude bitmap">;
+    ubyte	COMPAT_SPARSE_SUPER2:1<name="Sparse Super Block, v2">;
+
+    ubyte	INCOMPAT_NOT_USED:6<hidden=true>;
+    ushort  reserved<hidden=true>;
+} t_sb_feature_compat;
+
+typedef struct {    
+    ubyte	INCOMPAT_COMPRESSION:1<name="Compression">;
+    ubyte	INCOMPAT_FILETYPE:1<name="Directory entries record the file type">;
+    ubyte	INCOMPAT_RECOVER:1<name="Filesystem needs recovery">;
+    ubyte	INCOMPAT_JOURNAL_DEV:1<name="Filesystem has a separate journal device">;
+    ubyte	INCOMPAT_META_BG:1<name="Meta block groups">;
+    ubyte	INCOMPAT_NOT_USED_1:1<hidden=true>;
+    ubyte	INCOMPAT_EXTENTS:1<name="Files in this filesystem use extents">;
+    ubyte	INCOMPAT_64BIT:1<name="Enable a filesystem size of 2^64 blocks">;
+    ubyte	INCOMPAT_MMP:1<name="Multiple mount protection. Not implemented">;
+    ubyte	INCOMPAT_FLEX_BG:1<name="Flexible block groups">;
+    ubyte	INCOMPAT_EA_INODE:1<name="Inodes can be used for large extended attributes">;
+    ubyte	INCOMPAT_NOT_USED_2:1<hidden=true>;
+    ubyte	INCOMPAT_DIRDATA:1<name="Data in directory entry">;
+    ubyte	INCOMPAT_BG_USE_META_CSUM:1<name="Never used">;
+    ubyte	INCOMPAT_LARGEDIR:1<name="Large directory >2GB or 3-level htree">;
+    ubyte	INCOMPAT_INLINE_DATA:1<name="Data in inode">;
+    ubyte	INCOMPAT_ENCRYPT:1<name="Encrypted inodes are present on the filesystem">;
+
+    ubyte	INCOMPAT_NOT_USED:3<hidden=true>;
+    ubyte  reserved<hidden=true>;
+} t_sb_feature_incompat;
+
+typedef struct {
+    ubyte	RO_COMPAT_SPARSE_SUPER:1<name="Sparse superblocks. See the earlier discussion of this feature">;
+    ubyte	RO_COMPAT_LARGE_FILE:1<name="This filesystem has been used to store a file greater than 2GiB">;
+    ubyte	RO_COMPAT_BTREE_DIR:1<name="Not used in kernel or e2fsprogs">;
+    ubyte	RO_COMPAT_HUGE_FILE:1<name="This filesystem has files whose sizes are represented in units of logical blocks, not 512-byte sectors. This implies a very large file indeed!">;
+    ubyte	RO_COMPAT_GDT_CSUM:1<name="Group descriptors have checksums. In addition to detecting corruption, this is useful for lazy formatting with uninitialized groups">;
+    ubyte	RO_COMPAT_DIR_NLINK:1<name="Indicates that the old ext3 32,000 subdirectory limit no longer applies">;
+    ubyte	RO_COMPAT_EXTRA_ISIZE:1<name="Indicates that large inodes exist on this filesystem">;
+    ubyte	RO_COMPAT_HAS_SNAPSHOT:1<name="This filesystem has a snapshot">;
+    ubyte	RO_COMPAT_QUOTA:1<name="Quota">;
+    ubyte	RO_COMPAT_BIGALLOC:1<name="This filesystem supports \"bigalloc\", which means that file extents are tracked in units of clusters (of blocks) instead of blocks">;
+    ubyte	RO_COMPAT_METADATA_CSUM:1<name="This filesystem supports metadata checksumming. (RO_COMPAT_METADATA_CSUM; implies RO_COMPAT_GDT_CSUM, though GDT_CSUM must not be set)">;
+    ubyte	RO_COMPAT_REPLICA:1<name="Filesystem supports replicas. This feature is neither in the kernel nor e2fsprogs.">;
+    ubyte	RO_COMPAT_READONLY:1<name="Read-only filesystem image; the kernel will not mount this image read-write and most tools will refuse to write to the image.">;
+
+    ubyte	INCOMPAT_NOT_USED:3<hidden=true>;
+    ushort   reserved<hidden=true>;
+} t_sb_feature_ro_compat;
+
+typedef struct {
+    ubyte	EXT4_DEFM_DEBUG:1<name="Print debugging info upon (re)mount.">;
+    ubyte	EXT4_DEFM_BSDGROUPS:1<name="New files take the gid of the containing directory (instead of the fsgid of the current process).">;
+    ubyte	EXT4_DEFM_XATTR_USER:1<name="Support userspace-provided extended attributes.">;
+    ubyte	EXT4_DEFM_ACL:1<name="Support POSIX access control lists (ACLs).">;
+    ubyte	EXT4_DEFM_UID16:1<name="Do not support 32-bit UIDs.">;
+    ubyte	EXT4_DEFM_JMODE_DATA:1<name="All data and metadata are commited to the journal.">;
+    ubyte	EXT4_DEFM_JMODE_ORDERED:1<name="All data are flushed to the disk before metadata are committed to the journal.">;
+    ubyte	EXT4_DEFM_JMODE_WBACK:1<name="Data ordering is not preserved; data may be written after the metadata has been written.">;
+    ubyte	EXT4_DEFM_NOBARRIER:1<name="Disable write flushes.">;
+    ubyte	EXT4_DEFM_BLOCK_VALIDITY:1<name="Track which blocks in a filesystem are metadata and therefore should not be used as data blocks. This option will be enabled by default on 3.18, hopefully.">;
+    ubyte	EXT4_DEFM_DISCARD:1<name="Enable DISCARD support, where the storage device is told about blocks becoming unused.">;
+    ubyte	EXT4_DEFM_NODELALLOC:1<name="Disable delayed allocation.">;
+
+    ubyte	INCOMPAT_NOT_USED:4<hidden=true>;
+    ushort  reserved<hidden=true>;
+} t_sb_default_mount_opts;
+
+typedef struct {
+    ubyte	SIGNED_DIR_HASH:1<name="Signed directory hash in use">;
+    ubyte	UNSIGNED_DIR_HASH:1<name="Unsigned directory hash in use">;
+    ubyte	TEST_DEV_CODE:1<name="To test development code">;
+
+    ubyte	INCOMPAT_NOT_USED:5<hidden=true>;
+    ubyte   reserved<hidden=true>;
+    ushort  reserved2<hidden=true>;
+} t_sb_flags;
+
+typedef struct {
+    __le32              s_inodes_count;
+    __le32              s_blocks_count_lo;
+    __le32              s_r_blocks_count_lo;
+    __le32              s_free_blocks_count_lo;
+    __le32              s_free_inodes_count;
+    __le32              s_first_data_blockÏ;
+    __le32              s_log_block_size;
+    __le32              s_log_cluster_size;
+    __le32              s_blocks_per_group;
+    __le32              s_clusters_per_group;
+    __le32              s_inodes_per_group;
+    __le32              s_mtime;
+    __le32              s_wtime;
+    __le16              s_mnt_count;
+    __le16              s_max_mnt_count;
+    __le16              s_magic;
+
+    if (s_magic != 0xEF53) {
+        Warning("Invalid superblock!");
+        Exit(1);
+    }
+
+    t_sb_state          s_state;
+    t_sb_errors         s_errors;
+    __le16              s_minor_rev_level;
+    __le32              s_lastcheck;
+    __le32              s_checkinterval;
+    t_sb_creator_OS     s_creator_os;
+    t_sb_rev_level      s_rev_level;
+    __le16              s_def_resuid;
+    __le16              s_def_resgid;
+    __le32              s_first_ino;
+    __le16              s_inode_size;
+    __le16              s_block_group_nr;
+    t_sb_feature_compat    s_feature_compat;
+    t_sb_feature_incompat  s_feature_incompat;
+    t_sb_feature_ro_compat s_feature_ro_compat;
+    GUID                s_uuid;
+    char                s_volume_name[16];
+    char                s_last_mounted[64];
+    __le32              s_algorithm_usage_bitmap;
+    __u8                s_prealloc_blocks;
+    __u8                s_prealloc_dir_blocks;
+    __le16              s_reserved_gdt_blocks;
+    __u8                s_journal_uuid[16];
+    __le32              s_journal_inum;
+    __le32              s_journal_dev;
+    __le32              s_last_orphan;
+    __le32              s_hash_seed[4];
+    __u8                s_def_hash_version;
+    __u8                s_jnl_backup_type;
+    __le16              s_desc_size;
+    t_sb_default_mount_opts s_default_mount_opts;
+    __le32              s_first_meta_bg;
+    __le32              s_mkfs_time;
+    __le32              s_jnl_blocks[17];
+    __le32              s_blocks_count_hi;
+    __le32              s_r_blocks_count_hi;
+    __le32              s_free_blocks_count_hi;
+    __le16              s_min_extra_isize;
+    __le16              s_want_extra_isize;
+    t_sb_flags          s_flags;
+    __le16              s_raid_stride;
+    __le16              s_mmp_interval;
+    __le64              s_mmp_block;
+    __le32              s_raid_stripe_width;
+    __u8                s_log_groups_per_flex;
+    __u8                s_checksum_type;
+    __le16              s_reserved_pad;
+    __le64              s_kbytes_written;
+    __le32              s_snapshot_inum;
+    __le32              s_snapshot_id;
+    __le64              s_snapshot_r_blocks_count;
+    __le32              s_snapshot_list;
+    __le32              s_error_count;
+    __le32              s_first_error_time;
+    __le32              s_first_error_ino;
+    __le64              s_first_error_block;
+    __u8                s_first_error_func[32];
+    __le32              s_first_error_line;
+    __le32              s_last_error_time;
+    __le32              s_last_error_ino;
+    __le32              s_last_error_line;
+    __le64              s_last_error_block;
+    __u8                s_last_error_func[32];
+    __u8                s_mount_opts[64];
+    __le32              s_usr_quota_inum;
+    __le32              s_grp_quota_inum;
+    __le32              s_overhead_blocks;
+    __u8                s_backup_bgs[2];
+    __u8                s_encrypt_algos[4];
+    __le32              s_reserved[106];
+    __le16              __padding;
+    __le32              s_checksum;
+} Ext4_SB<size=1024, optimize=false>;
+
+typedef struct {
+    ubyte	EXT4_BG_INODE_UNINIT:1<name="Inode table and bitmap are not initialized">;
+    ubyte	EXT4_BG_BLOCK_UNINIT:1<name="Block bitmap is not initialized">;
+    ubyte	EXT4_BG_INODE_ZEROED:1<name="Inode table is zeroed">;
+
+    ubyte	INCOMPAT_NOT_USED:5<hidden=true>;
+    ubyte   reserved<hidden=true>;
+} t_bg_flags;
+
+typedef struct {
+    __le32      bg_block_bitmap_lo;
+    __le32      bg_inode_bitmap_lo;
+    __le32      bg_inode_table_lo;
+    __le16      bg_free_blocks_count_lo;
+    __le16      bg_free_inodes_count_lo;
+    __le16      bg_used_dirs_count_lo;
+    t_bg_flags  bg_flags;
+    __le32      bg_exclude_bitmap_lo;
+    __le16      bg_block_bitmap_csum_lo;
+    __le16      bg_inode_bitmap_csum_lo;
+    __le16      bg_itable_unused_lo;
+    __le16      bg_checksum;
+
+    if (is_64bit_filesystem) {
+        __le32      bg_block_bitmap_hi;
+        __le32      bg_inode_bitmap_hi;
+        __le32      bg_inode_table_hi;
+        __le16      bg_free_blocks_count_hi;
+        __le16      bg_free_inodes_count_hi;
+        __le16      bg_used_dirs_count_hi;
+        __le16      bg_itable_unused_hi;
+        __le32      bg_exclude_bitmap_hi;
+        __le16      bg_block_bitmap_csum_hi;
+        __le16      bg_inode_bitmap_csum_hi;
+        __u32       bg_reserved;
+    }
+} Ext4_BG_Desc;
+
+Ext4_SB   sb<hidden=true,name="Ext4 Superblock">;
+
+local int   block_count         = sb.s_blocks_count_lo;
+local int   blocks_per_group    = sb.s_blocks_per_group;
+local int   block_group_count   = block_count / blocks_per_group + ((block_count % blocks_per_group) ? 1 : 0);
+local int   block_size          = Pow(2, (10 + sb.s_log_block_size)); //2 ^ (10 + s_log_block_size)
+local int   block_group_size    = blocks_per_group * block_size;
+
+local int   inode_count         = sb.s_inodes_per_group;
+
+local int   is_64bit_filesystem = sb.s_feature_incompat.INCOMPAT_64BIT;
+
+local int   has_flex_bg = sb.s_feature_incompat.INCOMPAT_FLEX_BG;
+local int   has_journal = sb.s_feature_compat.COMPAT_HAS_JOURNAL;
+local int   has_extended_attr = sb.s_feature_compat.COMPAT_EXT_ATTR;
+local int   has_extents = sb.s_feature_incompat.INCOMPAT_EXTENTS;
+
+Printf("block_count         = %i\n", block_count);
+Printf("block_size          = %i\n", block_size);
+Printf("block_group_count   = %i\n", block_group_count);
+Printf("block_group_size    = %i\n", block_group_size);
+Printf("blocks_per_group    = %i\n", blocks_per_group);
+
+Printf("Is 64bit FS:        %s\n", ((is_64bit_filesystem) ? "yes" : "no"));
+
+Printf("Has flex BG:        %s\n", ((has_flex_bg) ? "yes" : "no"));
+Printf("Has journal:        %s\n", ((has_journal) ? "yes" : "no"));
+Printf("Has extended attr:  %s\n", ((has_extended_attr) ? "yes" : "no"));
+Printf("Has extents:        %s\n", ((has_extents) ? "yes" : "no"));
+
+FSeek(0x0);
+
+typedef struct {
+    local int bg_offset = FTell();
+
+    SetBackColor(cLtRed);
+    Ext4_SB sb<name="Superblock">;
+
+    local int bg_nr = sb.s_block_group_nr;
+    local int bg_block_count = (bg_nr == (block_group_count - 1)) ? (block_count % blocks_per_group) : blocks_per_group;
+   
+    local int bg_desc_c;
+    for (bg_desc_c = 0; bg_desc_c < block_group_count; bg_desc_c++) {
+        SetBackColor(cLtBlue);
+        Ext4_BG_Desc bg_desc<name="Block Group Descriptor">;
+    }
+
+    local int current_block_group_offset = FTell();
+
+    local int block_bitmap_block_nr = bg_desc[bg_nr].bg_block_bitmap_lo;
+    local int inode_bitmap_block_nr = bg_desc[bg_nr].bg_inode_bitmap_lo;
+
+    //block bitmap
+    FSeek((block_bitmap_block_nr * block_size));
+
+    SetBackColor(cLtGreen);
+    struct {
+        ubyte map[bg_block_count / 8];
+    } block_bitmap<name="Block Bitmap">;
+
+    //inode bitmap
+    FSeek((inode_bitmap_block_nr * block_size));
+
+    SetBackColor(cDkGreen);
+    struct {
+        ubyte map[inode_count / 8];
+    } inode_bitmap<name="Inode Bitmap">;
+
+    FSeek(current_block_group_offset);
+
+} Ext4_BG<size=func_block_group_size>;
+
+int func_block_group_size(Ext4_BG &r) {
+    return block_group_size;
+}
+
+typedef struct {
+    ubyte padding[1024]<hidden=true>;
+
+    local int bg;
+    for (bg = 0; bg < block_group_count; bg++) {
+        Ext4_BG block_group<name="Block Group">;
+    }
+
+    
+} Ext4_FS;
+
+Ext4_FS filesystem<name="Ext4 Filesystem">;
