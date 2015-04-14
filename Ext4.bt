@@ -283,6 +283,40 @@ typedef struct {
     }
 } Ext4_BG_Desc;
 
+typedef struct {
+    ubyte	EXT4_SECRM_FL:1<name="This file requires secure deletion">;
+    ubyte	EXT4_UNRM_FL:1<name="This file should be preserved, should undeletion be desired">;
+    ubyte	EXT4_COMPR_FL:1<name="File is compressed">;
+    ubyte	EXT4_SYNC_FL:1<name="All writes to the file must be synchronous">;
+    ubyte	EXT4_IMMUTABLE_FL:1<name="File is immutable">;
+    ubyte	EXT4_APPEND_FL:1<name="File can only be appended">;
+    ubyte	EXT4_NODUMP_FL:1<name="The dump(1) utility should not dump this file">;
+    ubyte	EXT4_NOATIME_FL:1<name="Do not update access time">;
+    ubyte	EXT4_DIRTY_FL:1<name="Dirty compressed file">;
+    ubyte	EXT4_COMPRBLK_FL:1<name="File has one or more compressed clusters">;
+    ubyte	EXT4_NOCOMPR_FL:1<name="Do not compress file">;
+    ubyte	EXT4_ENCRYPT_FL:1<name="Encrypted inode">;
+    ubyte	EXT4_INDEX_FL:1<name="Directory has hashed indexes">;
+    ubyte	EXT4_IMAGIC_FL:1<name="AFS magic directory">;
+    ubyte	EXT4_JOURNAL_DATA_FL:1<name="File data must always be written through the journal">;
+    ubyte	EXT4_NOTAIL_FL:1<name="File tail should not be merged">;
+    ubyte	EXT4_DIRSYNC_FL:1<name="All directory entry data should be written synchronously (see dirsync)">;
+    ubyte	EXT4_TOPDIR_FL:1<name="Top of directory hierarchy">;
+    ubyte	EXT4_HUGE_FILE_FL:1<name="This is a huge file">;
+    ubyte	EXT4_EXTENTS_FL:1<name="Inode uses extents">;
+    ubyte   UNUSED_1:1<hidden=true>;
+    ubyte	EXT4_EA_INODE_FL:1<name="Inode used for a large extended attribute">;
+    ubyte	EXT4_EOFBLOCKS_FL:1<name="This file has blocks allocated past EOF">;
+    ubyte   UNUSED_2:1<hidden=true>;
+    ubyte	EXT4_SNAPFILE_FL:1<name="Inode is a snapshot">;
+    ubyte   UNUSED_3:1<hidden=true>;
+    ubyte	EXT4_SNAPFILE_DELETED_FL:1<name="Snapshot is being deleted">;
+    ubyte	EXT4_SNAPFILE_SHRUNK_FL:1<name="Snapshot shrink has completed">;
+    ubyte   UNUSED_4:2<hidden=true>;
+    ubyte	EXT4_INLINE_DATA_FL:1<name="Inode has inline data">;
+    ubyte	EXT4_RESERVED_FL:1<name="Reserved for ext4 library">;    
+} t_inode_flags;
+
 Ext4_SB   sb<hidden=true,name="Ext4 Superblock">;
 
 local int   block_count         = sb.s_blocks_count_lo;
@@ -315,6 +349,109 @@ Printf("Has extents:        %s\n", ((has_extents) ? "yes" : "no"));
 
 FSeek(0x0);
 
+string func_read_inode_mode(__le16 mode) {
+    string s;
+
+    //Type
+    if ((mode & 0x1000) == 0x1000) {
+        s += "FIFO ";
+    }
+    else if ((mode & 0x2000) == 0x2000) {
+        s += "Char dev ";
+    }
+    else if ((mode & 0x4000) == 0x4000) {
+        s += "Dir ";
+    }
+    else if ((mode & 0x6000) == 0x6000) {
+        s += "Block dev ";
+    }
+    else if ((mode & 0x8000) == 0x8000) {
+        s += "File ";
+    }
+    else if ((mode & 0xA000) == 0xA000) {
+        s += "Symlink ";
+    }
+    else if ((mode & 0xC000) == 0xC000) {
+        s += "Socket ";
+    }
+
+    //Owner
+    s += ((mode & 0x100) ? "r" : "-");
+    s += ((mode & 0x80) ? "w" : "-");
+    s += ((mode & 0x40) ? "x" : "-");
+
+    //Group
+    s += ((mode & 0x20) ? "r" : "-");
+    s += ((mode & 0x10) ? "w" : "-");
+    s += ((mode & 0x8) ? "x" : "-");
+
+    //Others
+    s += ((mode & 0x4) ? "r" : "-");
+    s += ((mode & 0x2) ? "w" : "-");
+    s += ((mode & 0x1) ? "x" : "-");
+    
+    //Special
+    s += ((mode & 0x200) ? " Sticky" : "");
+    s += ((mode & 0x400) ? " SGID" : "");
+    s += ((mode & 0x800) ? " SUID" : "");
+
+    return s;
+}
+
+typedef struct {
+    __le16	i_mode<read=func_read_inode_mode>;
+    __le16	i_uid;
+    __le32	i_size_lo;
+    time_t	i_atime;
+    time_t	i_ctime;
+    time_t	i_mtime;
+    time_t	i_dtime;
+    __le16	i_gid;
+    __le16	i_links_count;
+    __le32	i_blocks_lo;
+    t_inode_flags	i_flags;
+
+    //OSD1 (Linux)
+    __le32	l_i_version; 
+
+    ubyte    i_block[60]; //todo: 60 bytes	i_block[EXT4_N_BLOCKS=15];
+
+    if (i_flags.EXT4_INLINE_DATA_FL) {
+        ubyte    data[60]<comment="Small file (<= 60 byte)">;
+    }
+    else if (i_flags.EXT4_EXTENTS_FL) {
+        
+    }
+
+    __le32	i_generation;
+    __le32	i_file_acl_lo;
+    __le32	i_size_high; // Ext2/3: i_dir_acl;
+    __le32	i_obso_faddr;
+
+    //OSD2 (linux fields; 12 byte)
+    __le16	l_i_blocks_high;
+    __le16	l_i_file_acl_high;
+    __le16	l_i_uid_high;
+    __le16	l_i_gid_high;
+    __le16	l_i_checksum_lo;
+    __le16	l_i_reserved;
+
+    if (sb.s_inode_size > 128) {
+        __le16	i_extra_isize;
+        __le16	i_checksum_hi;
+        time_t  i_ctime_extra;
+        time_t	i_mtime_extra;
+        time_t	i_atime_extra;
+        time_t	i_crtime;
+        time_t	i_crtime_extra;
+        __le32	i_version_hi;
+    }
+} Ext4_INode<name="INodes", size=func_inode_size, optimize=false>;
+
+int func_inode_size(Ext4_INode &r) {
+    return sb.s_inode_size;
+}
+
 typedef struct {
     local int bg_offset = FTell();
 
@@ -334,9 +471,10 @@ typedef struct {
 
     local int block_bitmap_block_nr = bg_desc[bg_nr].bg_block_bitmap_lo;
     local int inode_bitmap_block_nr = bg_desc[bg_nr].bg_inode_bitmap_lo;
+    local int inode_list_block_nr   = bg_desc[bg_nr].bg_inode_table_lo;
 
     //block bitmap
-    FSeek((block_bitmap_block_nr * block_size));
+    FSeek(block_bitmap_block_nr * block_size);
 
     SetBackColor(cLtGreen);
     struct {
@@ -344,12 +482,19 @@ typedef struct {
     } block_bitmap<name="Block Bitmap">;
 
     //inode bitmap
-    FSeek((inode_bitmap_block_nr * block_size));
+    FSeek(inode_bitmap_block_nr * block_size);
 
     SetBackColor(cDkGreen);
     struct {
         ubyte map[inode_count / 8];
     } inode_bitmap<name="Inode Bitmap">;
+
+    //inode list
+    FSeek(inode_list_block_nr * block_size);
+
+    SetBackColor(cLtAqua);
+
+    Ext4_INode inodes[sb.s_inodes_per_group];
 
     FSeek(current_block_group_offset);
 
