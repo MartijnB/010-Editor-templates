@@ -456,6 +456,86 @@ typedef struct {
 
             __le32 eb_checksum;
         } extents<size=60>;
+    } 
+    else {
+        __le32  i_block_direct[12];
+        __le32  i_block_single_indir;
+        __le32  i_block_double_indir;
+        __le32  i_block_tripple_indir;
+
+        struct {
+            local int bs4 = block_size / 4;
+            SetBackColor(cYellow);
+
+            local int end_block_addr = FTell();
+            FSeek(FTell() - (15 * 4));
+    
+            local int bd_i = 0;
+            while (bd_i < 12 && i_block_direct[bd_i] > 0 ) {
+                __le32 blocks;
+                bd_i++;
+            }
+
+            if (i_block_single_indir > 0) {
+                FSeek(i_block_single_indir * block_size);
+                local int bsi_i = 0;
+                while (bsi_i < bs4) {
+                    __le32 blocks;
+                    if (blocks == 0) {
+                        bsi_i = bs4;
+                    }
+                    bsi_i++;
+                }
+            }
+
+            if (i_block_double_indir > 0) {
+                FSeek(i_block_double_indir * block_size);
+                __le32 double_indir[bs4]<hidden=true>;
+                local int bdi_x;
+                local int bdi_i = 0;
+                while ( bdi_i < bs4 && double_indir[bdi_i] > 0) {
+                    FSeek(double_indir[bdi_i] * block_size);
+                    bdi_x = 0;
+                    while (bdi_x < bs4) {
+                        __le32 blocks;
+                        if (blocks == 0) {
+                            bdi_x = bs4;
+                        }
+                        bdi_x++;
+                    }
+                    bdi_i++;
+                }
+            }
+            // Tripple Indir is too resource intensive for 010Editor
+
+            //if (i_block_tripple_indir > 0) {
+            //    FSeek(i_block_tripple_indir * block_size);
+            //    __le32 tripple_indir[bs4]<hidden=true>;
+            //    local int bti_x;
+            //    local int bti_y;
+            //    local int bti_i = 0;
+            //    while ( bti_i < bs4 && tripple_indir[bti_i] > 0) {
+            //        FSeek(tripple_indir[bti_i] * block_size);
+            //        __le32 second_double[bs4]<hidden=true>;
+            //        bti_x = 0;
+            //        while ( bti_x < bs4 && second_double[bti_x] > 0) {
+            //            FSeek(second_double[bti_x] * block_size);
+            //            bti_y = 0;
+            //            while ( bti_y < bs4 ) {
+            //                __le32 blocks;
+            //                if (blocks == 0) {
+            //                    bti_y = bs4;
+            //                }
+            //                bti_y++;
+            //            }
+            //            bdi_x++;
+            //        }                                
+            //        bti_i++;
+            //    }    
+            //}
+                
+            FSeek(end_block_addr);
+        } blocks;
     }
 
     __le32	i_generation;
