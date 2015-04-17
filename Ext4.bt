@@ -1,10 +1,10 @@
 //--------------------------------------
 //--- 010 Editor v6.0.1 Binary Template
 //
-// File:
-// Author:
+// File: Ext4.bt
+// Author: Martijn Bogaard & Niels van Dijkhuizen
 // Revision:
-// Purpose:
+// Purpose: (Partial) parser for ext4 filesystems with (some) backwards compatibility for ext2 and 3
 //--------------------------------------
 
 // Load superblock at 0x400
