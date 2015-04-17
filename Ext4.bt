@@ -600,7 +600,7 @@ typedef struct {
         } data<name="Data">;
     }
 
-    if (is_directory) {
+    if (is_directory && i_size_lo > 0) {
         if (i_flags.EXT4_INDEX_FL) {
         }
         else {
@@ -608,23 +608,46 @@ typedef struct {
 
             FSeek(startof(data.data[0]));
 
-            if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
-                struct {
-                    __le32 inode;
-                    __le16 rec_len;
-                    ubyte  name_len;
-                    ubyte  file_type;
-                    char   name[name_len];
-                } files<name="Files">;
-            }
-            else {
-                struct {
-                    __le32 inode;
-                    __le16 rec_len;
-                    __le16 name_len;
-                    char   name[name_len];
-                } files<name="Files">;
-            }
+            struct {
+                local int read_dir_ent_size = 0;
+                while (read_dir_ent_size < i_size_lo) {
+                    if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
+                        struct {
+                            __le32 inode;
+                            __le16 rec_len;
+                            ubyte  name_len;
+                            ubyte  file_type;
+                            
+                            if (name_len > 0)
+                                char name[name_len];
+    
+                            read_dir_ent_size += rec_len;
+    
+                            local int padding_size = rec_len - name_len - 8;
+        
+                            if (padding_size > 0)
+                                ubyte padding[padding_size]<hidden=true>;
+                        } files<name="File", optimize=false>;
+                    }
+                    else {
+                        struct {
+                            __le32 inode;
+                            __le16 rec_len;
+                            __le16 name_len;
+    
+                            if (name_len > 0)
+                                char name[name_len];
+    
+                            read_dir_ent_size += rec_len;
+    
+                            local int padding_size = rec_len - name_len - 8;
+        
+                            if (padding_size > 0)
+                                ubyte padding[padding_size]<hidden=true>;
+                        } file<name="File", optimize=false>;
+                    }
+                }
+            } files<name="Files">;
 
             FSeek(current_pos_dir_ent);
         }
