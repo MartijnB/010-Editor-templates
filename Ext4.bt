@@ -35,11 +35,11 @@ string GUID_Read(GUID v) {
 }
 
 typedef struct {
-    ubyte	cleanly_umounted:1<name="Cleanly umounted">;
-    ubyte	errors_detected:1<name="Errors detected">;
-    ubyte	orphans_being_recovered:1<name="Orphans being recovered">;
+    ubyte   cleanly_umounted:1<name="Cleanly umounted">;
+    ubyte   errors_detected:1<name="Errors detected">;
+    ubyte   orphans_being_recovered:1<name="Orphans being recovered">;
 
-    ubyte	INCOMPAT_NOT_USED:3<hidden=true>;
+    ubyte   INCOMPAT_NOT_USED:3<hidden=true>;
     ubyte   reserved<hidden=true>;
 } t_sb_state;
 
@@ -63,87 +63,87 @@ enum<__le32> t_sb_rev_level {
 };
 
 typedef struct {
-    ubyte	COMPAT_DIR_PREALLOC:1<name="Directory preallocation">;
-    ubyte	COMPAT_IMAGIC_INODES:1<name="Imagic Inodes">;
-    ubyte	COMPAT_HAS_JOURNAL:1<name="Has a journal">;
-    ubyte	COMPAT_EXT_ATTR:1<name="Supports extended attributes ">;
-    ubyte	COMPAT_RESIZE_INODE:1<name="Has reserved GDT blocks">;
-    ubyte	COMPAT_DIR_INDEX:1<name="Has directory indices">;
-    ubyte	COMPAT_LAZY_BG:1<name="Lazy BG">;
-    ubyte	COMPAT_EXCLUDE_INODE:1<name="Exclude inode">;
-    ubyte	COMPAT_EXCLUDE_BITMAP:1<name="Exclude bitmap">;
-    ubyte	COMPAT_SPARSE_SUPER2:1<name="Sparse Super Block, v2">;
+    ubyte   COMPAT_DIR_PREALLOC:1<name="Directory preallocation">;
+    ubyte   COMPAT_IMAGIC_INODES:1<name="Imagic Inodes">;
+    ubyte   COMPAT_HAS_JOURNAL:1<name="Has a journal">;
+    ubyte   COMPAT_EXT_ATTR:1<name="Supports extended attributes ">;
+    ubyte   COMPAT_RESIZE_INODE:1<name="Has reserved GDT blocks">;
+    ubyte   COMPAT_DIR_INDEX:1<name="Has directory indices">;
+    ubyte   COMPAT_LAZY_BG:1<name="Lazy BG">;
+    ubyte   COMPAT_EXCLUDE_INODE:1<name="Exclude inode">;
+    ubyte   COMPAT_EXCLUDE_BITMAP:1<name="Exclude bitmap">;
+    ubyte   COMPAT_SPARSE_SUPER2:1<name="Sparse Super Block, v2">;
 
-    ubyte	INCOMPAT_NOT_USED:6<hidden=true>;
+    ubyte   INCOMPAT_NOT_USED:6<hidden=true>;
     ushort  reserved<hidden=true>;
 } t_sb_feature_compat;
 
 typedef struct {    
-    ubyte	INCOMPAT_COMPRESSION:1<name="Compression">;
-    ubyte	INCOMPAT_FILETYPE:1<name="Directory entries record the file type">;
-    ubyte	INCOMPAT_RECOVER:1<name="Filesystem needs recovery">;
-    ubyte	INCOMPAT_JOURNAL_DEV:1<name="Filesystem has a separate journal device">;
-    ubyte	INCOMPAT_META_BG:1<name="Meta block groups">;
-    ubyte	INCOMPAT_NOT_USED_1:1<hidden=true>;
-    ubyte	INCOMPAT_EXTENTS:1<name="Files in this filesystem use extents">;
-    ubyte	INCOMPAT_64BIT:1<name="Enable a filesystem size of 2^64 blocks">;
-    ubyte	INCOMPAT_MMP:1<name="Multiple mount protection. Not implemented">;
-    ubyte	INCOMPAT_FLEX_BG:1<name="Flexible block groups">;
-    ubyte	INCOMPAT_EA_INODE:1<name="Inodes can be used for large extended attributes">;
-    ubyte	INCOMPAT_NOT_USED_2:1<hidden=true>;
-    ubyte	INCOMPAT_DIRDATA:1<name="Data in directory entry">;
-    ubyte	INCOMPAT_BG_USE_META_CSUM:1<name="Never used">;
-    ubyte	INCOMPAT_LARGEDIR:1<name="Large directory >2GB or 3-level htree">;
-    ubyte	INCOMPAT_INLINE_DATA:1<name="Data in inode">;
-    ubyte	INCOMPAT_ENCRYPT:1<name="Encrypted inodes are present on the filesystem">;
+    ubyte   INCOMPAT_COMPRESSION:1<name="Compression">;
+    ubyte   INCOMPAT_FILETYPE:1<name="Directory entries record the file type">;
+    ubyte   INCOMPAT_RECOVER:1<name="Filesystem needs recovery">;
+    ubyte   INCOMPAT_JOURNAL_DEV:1<name="Filesystem has a separate journal device">;
+    ubyte   INCOMPAT_META_BG:1<name="Meta block groups">;
+    ubyte   INCOMPAT_NOT_USED_1:1<hidden=true>;
+    ubyte   INCOMPAT_EXTENTS:1<name="Files in this filesystem use extents">;
+    ubyte   INCOMPAT_64BIT:1<name="Enable a filesystem size of 2^64 blocks">;
+    ubyte   INCOMPAT_MMP:1<name="Multiple mount protection. Not implemented">;
+    ubyte   INCOMPAT_FLEX_BG:1<name="Flexible block groups">;
+    ubyte   INCOMPAT_EA_INODE:1<name="Inodes can be used for large extended attributes">;
+    ubyte   INCOMPAT_NOT_USED_2:1<hidden=true>;
+    ubyte   INCOMPAT_DIRDATA:1<name="Data in directory entry">;
+    ubyte   INCOMPAT_BG_USE_META_CSUM:1<name="Never used">;
+    ubyte   INCOMPAT_LARGEDIR:1<name="Large directory >2GB or 3-level htree">;
+    ubyte   INCOMPAT_INLINE_DATA:1<name="Data in inode">;
+    ubyte   INCOMPAT_ENCRYPT:1<name="Encrypted inodes are present on the filesystem">;
 
-    ubyte	INCOMPAT_NOT_USED:3<hidden=true>;
+    ubyte   INCOMPAT_NOT_USED:3<hidden=true>;
     ubyte  reserved<hidden=true>;
 } t_sb_feature_incompat;
 
 typedef struct {
-    ubyte	RO_COMPAT_SPARSE_SUPER:1<name="Sparse superblocks. See the earlier discussion of this feature">;
-    ubyte	RO_COMPAT_LARGE_FILE:1<name="This filesystem has been used to store a file greater than 2GiB">;
-    ubyte	RO_COMPAT_BTREE_DIR:1<name="Not used in kernel or e2fsprogs">;
-    ubyte	RO_COMPAT_HUGE_FILE:1<name="This filesystem has files whose sizes are represented in units of logical blocks, not 512-byte sectors. This implies a very large file indeed!">;
-    ubyte	RO_COMPAT_GDT_CSUM:1<name="Group descriptors have checksums. In addition to detecting corruption, this is useful for lazy formatting with uninitialized groups">;
-    ubyte	RO_COMPAT_DIR_NLINK:1<name="Indicates that the old ext3 32,000 subdirectory limit no longer applies">;
-    ubyte	RO_COMPAT_EXTRA_ISIZE:1<name="Indicates that large inodes exist on this filesystem">;
-    ubyte	RO_COMPAT_HAS_SNAPSHOT:1<name="This filesystem has a snapshot">;
-    ubyte	RO_COMPAT_QUOTA:1<name="Quota">;
-    ubyte	RO_COMPAT_BIGALLOC:1<name="This filesystem supports \"bigalloc\", which means that file extents are tracked in units of clusters (of blocks) instead of blocks">;
-    ubyte	RO_COMPAT_METADATA_CSUM:1<name="This filesystem supports metadata checksumming. (RO_COMPAT_METADATA_CSUM; implies RO_COMPAT_GDT_CSUM, though GDT_CSUM must not be set)">;
-    ubyte	RO_COMPAT_REPLICA:1<name="Filesystem supports replicas. This feature is neither in the kernel nor e2fsprogs.">;
-    ubyte	RO_COMPAT_READONLY:1<name="Read-only filesystem image; the kernel will not mount this image read-write and most tools will refuse to write to the image.">;
+    ubyte   RO_COMPAT_SPARSE_SUPER:1<name="Sparse superblocks. See the earlier discussion of this feature">;
+    ubyte   RO_COMPAT_LARGE_FILE:1<name="This filesystem has been used to store a file greater than 2GiB">;
+    ubyte   RO_COMPAT_BTREE_DIR:1<name="Not used in kernel or e2fsprogs">;
+    ubyte   RO_COMPAT_HUGE_FILE:1<name="This filesystem has files whose sizes are represented in units of logical blocks, not 512-byte sectors. This implies a very large file indeed!">;
+    ubyte   RO_COMPAT_GDT_CSUM:1<name="Group descriptors have checksums. In addition to detecting corruption, this is useful for lazy formatting with uninitialized groups">;
+    ubyte   RO_COMPAT_DIR_NLINK:1<name="Indicates that the old ext3 32,000 subdirectory limit no longer applies">;
+    ubyte   RO_COMPAT_EXTRA_ISIZE:1<name="Indicates that large inodes exist on this filesystem">;
+    ubyte   RO_COMPAT_HAS_SNAPSHOT:1<name="This filesystem has a snapshot">;
+    ubyte   RO_COMPAT_QUOTA:1<name="Quota">;
+    ubyte   RO_COMPAT_BIGALLOC:1<name="This filesystem supports \"bigalloc\", which means that file extents are tracked in units of clusters (of blocks) instead of blocks">;
+    ubyte   RO_COMPAT_METADATA_CSUM:1<name="This filesystem supports metadata checksumming. (RO_COMPAT_METADATA_CSUM; implies RO_COMPAT_GDT_CSUM, though GDT_CSUM must not be set)">;
+    ubyte   RO_COMPAT_REPLICA:1<name="Filesystem supports replicas. This feature is neither in the kernel nor e2fsprogs.">;
+    ubyte   RO_COMPAT_READONLY:1<name="Read-only filesystem image; the kernel will not mount this image read-write and most tools will refuse to write to the image.">;
 
-    ubyte	INCOMPAT_NOT_USED:3<hidden=true>;
+    ubyte   INCOMPAT_NOT_USED:3<hidden=true>;
     ushort   reserved<hidden=true>;
 } t_sb_feature_ro_compat;
 
 typedef struct {
-    ubyte	EXT4_DEFM_DEBUG:1<name="Print debugging info upon (re)mount.">;
-    ubyte	EXT4_DEFM_BSDGROUPS:1<name="New files take the gid of the containing directory (instead of the fsgid of the current process).">;
-    ubyte	EXT4_DEFM_XATTR_USER:1<name="Support userspace-provided extended attributes.">;
-    ubyte	EXT4_DEFM_ACL:1<name="Support POSIX access control lists (ACLs).">;
-    ubyte	EXT4_DEFM_UID16:1<name="Do not support 32-bit UIDs.">;
-    ubyte	EXT4_DEFM_JMODE_DATA:1<name="All data and metadata are commited to the journal.">;
-    ubyte	EXT4_DEFM_JMODE_ORDERED:1<name="All data are flushed to the disk before metadata are committed to the journal.">;
-    ubyte	EXT4_DEFM_JMODE_WBACK:1<name="Data ordering is not preserved; data may be written after the metadata has been written.">;
-    ubyte	EXT4_DEFM_NOBARRIER:1<name="Disable write flushes.">;
-    ubyte	EXT4_DEFM_BLOCK_VALIDITY:1<name="Track which blocks in a filesystem are metadata and therefore should not be used as data blocks. This option will be enabled by default on 3.18, hopefully.">;
-    ubyte	EXT4_DEFM_DISCARD:1<name="Enable DISCARD support, where the storage device is told about blocks becoming unused.">;
-    ubyte	EXT4_DEFM_NODELALLOC:1<name="Disable delayed allocation.">;
+    ubyte   EXT4_DEFM_DEBUG:1<name="Print debugging info upon (re)mount.">;
+    ubyte   EXT4_DEFM_BSDGROUPS:1<name="New files take the gid of the containing directory (instead of the fsgid of the current process).">;
+    ubyte   EXT4_DEFM_XATTR_USER:1<name="Support userspace-provided extended attributes.">;
+    ubyte   EXT4_DEFM_ACL:1<name="Support POSIX access control lists (ACLs).">;
+    ubyte   EXT4_DEFM_UID16:1<name="Do not support 32-bit UIDs.">;
+    ubyte   EXT4_DEFM_JMODE_DATA:1<name="All data and metadata are commited to the journal.">;
+    ubyte   EXT4_DEFM_JMODE_ORDERED:1<name="All data are flushed to the disk before metadata are committed to the journal.">;
+    ubyte   EXT4_DEFM_JMODE_WBACK:1<name="Data ordering is not preserved; data may be written after the metadata has been written.">;
+    ubyte   EXT4_DEFM_NOBARRIER:1<name="Disable write flushes.">;
+    ubyte   EXT4_DEFM_BLOCK_VALIDITY:1<name="Track which blocks in a filesystem are metadata and therefore should not be used as data blocks. This option will be enabled by default on 3.18, hopefully.">;
+    ubyte   EXT4_DEFM_DISCARD:1<name="Enable DISCARD support, where the storage device is told about blocks becoming unused.">;
+    ubyte   EXT4_DEFM_NODELALLOC:1<name="Disable delayed allocation.">;
 
-    ubyte	INCOMPAT_NOT_USED:4<hidden=true>;
+    ubyte   INCOMPAT_NOT_USED:4<hidden=true>;
     ushort  reserved<hidden=true>;
 } t_sb_default_mount_opts;
 
 typedef struct {
-    ubyte	SIGNED_DIR_HASH:1<name="Signed directory hash in use">;
-    ubyte	UNSIGNED_DIR_HASH:1<name="Unsigned directory hash in use">;
-    ubyte	TEST_DEV_CODE:1<name="To test development code">;
+    ubyte   SIGNED_DIR_HASH:1<name="Signed directory hash in use">;
+    ubyte   UNSIGNED_DIR_HASH:1<name="Unsigned directory hash in use">;
+    ubyte   TEST_DEV_CODE:1<name="To test development code">;
 
-    ubyte	INCOMPAT_NOT_USED:5<hidden=true>;
+    ubyte   INCOMPAT_NOT_USED:5<hidden=true>;
     ubyte   reserved<hidden=true>;
     ushort  reserved2<hidden=true>;
 } t_sb_flags;
@@ -246,11 +246,11 @@ typedef struct {
 } Ext4_SB<size=1024, optimize=false>;
 
 typedef struct {
-    ubyte	EXT4_BG_INODE_UNINIT:1<name="Inode table and bitmap are not initialized">;
-    ubyte	EXT4_BG_BLOCK_UNINIT:1<name="Block bitmap is not initialized">;
-    ubyte	EXT4_BG_INODE_ZEROED:1<name="Inode table is zeroed">;
+    ubyte   EXT4_BG_INODE_UNINIT:1<name="Inode table and bitmap are not initialized">;
+    ubyte   EXT4_BG_BLOCK_UNINIT:1<name="Block bitmap is not initialized">;
+    ubyte   EXT4_BG_INODE_ZEROED:1<name="Inode table is zeroed">;
 
-    ubyte	INCOMPAT_NOT_USED:5<hidden=true>;
+    ubyte   INCOMPAT_NOT_USED:5<hidden=true>;
     ubyte   reserved<hidden=true>;
 } t_bg_flags;
 
@@ -284,37 +284,37 @@ typedef struct {
 } Ext4_BG_Desc;
 
 typedef struct {
-    ubyte	EXT4_SECRM_FL:1<name="This file requires secure deletion">;
-    ubyte	EXT4_UNRM_FL:1<name="This file should be preserved, should undeletion be desired">;
-    ubyte	EXT4_COMPR_FL:1<name="File is compressed">;
-    ubyte	EXT4_SYNC_FL:1<name="All writes to the file must be synchronous">;
-    ubyte	EXT4_IMMUTABLE_FL:1<name="File is immutable">;
-    ubyte	EXT4_APPEND_FL:1<name="File can only be appended">;
-    ubyte	EXT4_NODUMP_FL:1<name="The dump(1) utility should not dump this file">;
-    ubyte	EXT4_NOATIME_FL:1<name="Do not update access time">;
-    ubyte	EXT4_DIRTY_FL:1<name="Dirty compressed file">;
-    ubyte	EXT4_COMPRBLK_FL:1<name="File has one or more compressed clusters">;
-    ubyte	EXT4_NOCOMPR_FL:1<name="Do not compress file">;
-    ubyte	EXT4_ENCRYPT_FL:1<name="Encrypted inode">;
-    ubyte	EXT4_INDEX_FL:1<name="Directory has hashed indexes">;
-    ubyte	EXT4_IMAGIC_FL:1<name="AFS magic directory">;
-    ubyte	EXT4_JOURNAL_DATA_FL:1<name="File data must always be written through the journal">;
-    ubyte	EXT4_NOTAIL_FL:1<name="File tail should not be merged">;
-    ubyte	EXT4_DIRSYNC_FL:1<name="All directory entry data should be written synchronously (see dirsync)">;
-    ubyte	EXT4_TOPDIR_FL:1<name="Top of directory hierarchy">;
-    ubyte	EXT4_HUGE_FILE_FL:1<name="This is a huge file">;
-    ubyte	EXT4_EXTENTS_FL:1<name="Inode uses extents">;
+    ubyte   EXT4_SECRM_FL:1<name="This file requires secure deletion">;
+    ubyte   EXT4_UNRM_FL:1<name="This file should be preserved, should undeletion be desired">;
+    ubyte   EXT4_COMPR_FL:1<name="File is compressed">;
+    ubyte   EXT4_SYNC_FL:1<name="All writes to the file must be synchronous">;
+    ubyte   EXT4_IMMUTABLE_FL:1<name="File is immutable">;
+    ubyte   EXT4_APPEND_FL:1<name="File can only be appended">;
+    ubyte   EXT4_NODUMP_FL:1<name="The dump(1) utility should not dump this file">;
+    ubyte   EXT4_NOATIME_FL:1<name="Do not update access time">;
+    ubyte   EXT4_DIRTY_FL:1<name="Dirty compressed file">;
+    ubyte   EXT4_COMPRBLK_FL:1<name="File has one or more compressed clusters">;
+    ubyte   EXT4_NOCOMPR_FL:1<name="Do not compress file">;
+    ubyte   EXT4_ENCRYPT_FL:1<name="Encrypted inode">;
+    ubyte   EXT4_INDEX_FL:1<name="Directory has hashed indexes">;
+    ubyte   EXT4_IMAGIC_FL:1<name="AFS magic directory">;
+    ubyte   EXT4_JOURNAL_DATA_FL:1<name="File data must always be written through the journal">;
+    ubyte   EXT4_NOTAIL_FL:1<name="File tail should not be merged">;
+    ubyte   EXT4_DIRSYNC_FL:1<name="All directory entry data should be written synchronously (see dirsync)">;
+    ubyte   EXT4_TOPDIR_FL:1<name="Top of directory hierarchy">;
+    ubyte   EXT4_HUGE_FILE_FL:1<name="This is a huge file">;
+    ubyte   EXT4_EXTENTS_FL:1<name="Inode uses extents">;
     ubyte   UNUSED_1:1<hidden=true>;
-    ubyte	EXT4_EA_INODE_FL:1<name="Inode used for a large extended attribute">;
-    ubyte	EXT4_EOFBLOCKS_FL:1<name="This file has blocks allocated past EOF">;
+    ubyte   EXT4_EA_INODE_FL:1<name="Inode used for a large extended attribute">;
+    ubyte   EXT4_EOFBLOCKS_FL:1<name="This file has blocks allocated past EOF">;
     ubyte   UNUSED_2:1<hidden=true>;
-    ubyte	EXT4_SNAPFILE_FL:1<name="Inode is a snapshot">;
+    ubyte   EXT4_SNAPFILE_FL:1<name="Inode is a snapshot">;
     ubyte   UNUSED_3:1<hidden=true>;
-    ubyte	EXT4_SNAPFILE_DELETED_FL:1<name="Snapshot is being deleted">;
-    ubyte	EXT4_SNAPFILE_SHRUNK_FL:1<name="Snapshot shrink has completed">;
+    ubyte   EXT4_SNAPFILE_DELETED_FL:1<name="Snapshot is being deleted">;
+    ubyte   EXT4_SNAPFILE_SHRUNK_FL:1<name="Snapshot shrink has completed">;
     ubyte   UNUSED_4:2<hidden=true>;
-    ubyte	EXT4_INLINE_DATA_FL:1<name="Inode has inline data">;
-    ubyte	EXT4_RESERVED_FL:1<name="Reserved for ext4 library">;    
+    ubyte   EXT4_INLINE_DATA_FL:1<name="Inode has inline data">;
+    ubyte   EXT4_RESERVED_FL:1<name="Reserved for ext4 library">;    
 } t_inode_flags;
 
 Ext4_SB   sb<hidden=true,name="Ext4 Superblock">;
@@ -399,20 +399,22 @@ string func_read_inode_mode(__le16 mode) {
 }
 
 typedef struct {
-    __le16	i_mode<read=func_read_inode_mode>;
-    __le16	i_uid;
-    __le32	i_size_lo;
-    time_t	i_atime;
-    time_t	i_ctime;
-    time_t	i_mtime;
-    time_t	i_dtime;
-    __le16	i_gid;
-    __le16	i_links_count;
-    __le32	i_blocks_lo;
-    t_inode_flags	i_flags;
+    __le16  i_mode<read=func_read_inode_mode>;
+    __le16  i_uid;
+    __le32  i_size_lo;
+    time_t  i_atime;
+    time_t  i_ctime;
+    time_t  i_mtime;
+    time_t  i_dtime;
+    __le16  i_gid;
+    __le16  i_links_count;
+    __le32  i_blocks_lo;
+    t_inode_flags   i_flags;
 
+    local ubyte is_directory = ((i_mode & 0x4000) == 0x4000);
+    
     //OSD1 (Linux)
-    __le32	l_i_version; 
+    __le32  l_i_version; 
 
     if (i_flags.EXT4_INLINE_DATA_FL) {
         ubyte    data[60]<comment="Small file (<= 60 byte)">;
@@ -420,34 +422,33 @@ typedef struct {
     else if (i_flags.EXT4_EXTENTS_FL) {
         struct {
             struct {
-                __le16	eh_magic;
+                __le16  eh_magic;
     
                 if (eh_magic != 0xF30A) {
                     Warning("Invalid extent header!");
                     Exit(1);
                 }
-
-                __le16	eh_entries;
-                __le16	eh_max;
-                __le16	eh_depth;
-                __le32	eh_generation;
+                __le16  eh_entries;
+                __le16  eh_max;
+                __le16  eh_depth;
+                __le32  eh_generation;
             } header;
 
             if (header.eh_entries) {
                 if (header.eh_depth > 0) {
                     struct {
-                        __le32	ei_block;
-                        __le32	ei_leaf_lo;
-                        __le16	ei_leaf_hi;
-                        __le16	ei_unused;
+                        __le32  ei_block;
+                        __le32  ei_leaf_lo;
+                        __le16  ei_leaf_hi;
+                        __le16  ei_unused;
                     } index_node[header.eh_entries];
                 }
                 else {
                     struct {
-                        __le32	ee_block;
-                        __le16	ee_len;
-                        __le16	ee_start_hi;
-                        __le32	ee_start_lo;
+                        __le32  ee_block;
+                        __le16  ee_len;
+                        __le16  ee_start_hi;
+                        __le32  ee_start_lo;
                     } extent[header.eh_entries];
                 }
             }
@@ -538,28 +539,28 @@ typedef struct {
         } blocks;
     }
 
-    __le32	i_generation;
-    __le32	i_file_acl_lo;
-    __le32	i_size_high; // Ext2/3: i_dir_acl;
-    __le32	i_obso_faddr;
+    __le32  i_generation;
+    __le32  i_file_acl_lo;
+    __le32  i_size_high; // Ext2/3: i_dir_acl;
+    __le32  i_obso_faddr;
 
     //OSD2 (linux fields; 12 byte)
-    __le16	l_i_blocks_high;
-    __le16	l_i_file_acl_high;
-    __le16	l_i_uid_high;
-    __le16	l_i_gid_high;
-    __le16	l_i_checksum_lo;
-    __le16	l_i_reserved;
+    __le16  l_i_blocks_high;
+    __le16  l_i_file_acl_high;
+    __le16  l_i_uid_high;
+    __le16  l_i_gid_high;
+    __le16  l_i_checksum_lo;
+    __le16  l_i_reserved;
 
     if (sb.s_inode_size > 128) {
-        __le16	i_extra_isize;
-        __le16	i_checksum_hi;
+        __le16  i_extra_isize;
+        __le16  i_checksum_hi;
         time_t  i_ctime_extra;
-        time_t	i_mtime_extra;
-        time_t	i_atime_extra;
-        time_t	i_crtime;
-        time_t	i_crtime_extra;
-        __le32	i_version_hi;
+        time_t  i_mtime_extra;
+        time_t  i_atime_extra;
+        time_t  i_crtime;
+        time_t  i_crtime_extra;
+        __le32  i_version_hi;
     }
 
     //extent data
@@ -598,6 +599,36 @@ typedef struct {
             FSeek(i_current_pos);
         } data<name="Data">;
     }
+
+    if (is_directory) {
+        if (i_flags.EXT4_INDEX_FL) {
+        }
+        else {
+            local int current_pos_dir_ent = FTell();
+
+            FSeek(startof(data.data[0]));
+
+            if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
+                struct {
+                    __le32 inode;
+                    __le16 rec_len;
+                    ubyte  name_len;
+                    ubyte  file_type;
+                    char   name[name_len];
+                } files<name="Files">;
+            }
+            else {
+                struct {
+                    __le32 inode;
+                    __le16 rec_len;
+                    __le16 name_len;
+                    char   name[name_len];
+                } files<name="Files">;
+            }
+
+            FSeek(current_pos_dir_ent);
+        }
+    }
 } Ext4_INode<name=func_inode_name, size=func_inode_size, optimize=false>;
 
 string func_inode_name(Ext4_INode &r) {
@@ -608,6 +639,28 @@ string func_inode_name(Ext4_INode &r) {
         return "Unused";
 
     s += func_read_inode_mode(mode);
+
+    if (r.i_flags.EXT4_INLINE_DATA_FL) {
+        s += " INLINE";
+    }
+    else if (r.i_flags.EXT4_EXTENTS_FL) {
+        s += " Extents";
+    }
+    else {
+        s += " Direct/Indirect block map";
+    }
+
+    // Directory
+    if ((mode & 0x4000) == 0x4000) {
+        if (r.i_flags.EXT4_INDEX_FL) {
+            s += " HTree";
+        }
+        else {
+            s += " Linear";
+        }
+    }
+
+    SPrintf(s, "%s %ib", s, r.i_size_lo);
     
     return s;
 }
