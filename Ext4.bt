@@ -712,11 +712,19 @@ typedef struct {
 } Ext4_INode<name=func_inode_name, size=func_inode_size, optimize=false>;
 
 string func_file_name_a(file_info_a &r) {
-    return r.name;
+    string s;
+
+    SPrintf(s, "%s (Inode %i)", r.name, r.inode);
+
+    return s;
 }
 
 string func_file_name_b(file_info_b &r) {
-    return r.name;
+    string s;
+
+    SPrintf(s, "%s (Inode %i)", r.name, r.inode);
+
+    return s;
 }
 
 string func_inode_name(Ext4_INode &r) {
