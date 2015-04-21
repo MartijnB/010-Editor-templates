@@ -334,11 +334,14 @@ local int   has_journal = sb.s_feature_compat.COMPAT_HAS_JOURNAL;
 local int   has_extended_attr = sb.s_feature_compat.COMPAT_EXT_ATTR;
 local int   has_extents = sb.s_feature_incompat.INCOMPAT_EXTENTS;
 
+local int   bg_desc_size        = is_64bit_filesystem ? sb.s_desc_size : 32;
+
 Printf("block_count         = %i\n", block_count);
 Printf("block_size          = %i\n", block_size);
 Printf("block_group_count   = %i\n", block_group_count);
 Printf("block_group_size    = %i\n", block_group_size);
 Printf("blocks_per_group    = %i\n", blocks_per_group);
+Printf("bg_desc_size        = %i\n", bg_desc_size);
 
 Printf("Is 64bit FS:        %s\n", ((is_64bit_filesystem) ? "yes" : "no"));
 
@@ -755,68 +758,63 @@ int func_inode_size(Ext4_INode &r) {
 }
 
 typedef struct {
-    local int bg_offset = FTell();
-
-    SetBackColor(cLtRed);
-    Ext4_SB sb<name="Superblock">;
-
-    local int bg_nr = sb.s_block_group_nr;
-    local int bg_block_count = (bg_nr == (block_group_count - 1)) ? (block_count % blocks_per_group) : blocks_per_group;
-   
-    local int bg_desc_c;
-    for (bg_desc_c = 0; bg_desc_c < block_group_count; bg_desc_c++) {
-        SetBackColor(cLtBlue);
-        Ext4_BG_Desc bg_desc<name="Block Group Descriptor">;
-    }
-
-    local int current_block_group_offset = FTell();
-
-    local int block_bitmap_block_nr = bg_desc[bg_nr].bg_block_bitmap_lo;
-    local int inode_bitmap_block_nr = bg_desc[bg_nr].bg_inode_bitmap_lo;
-    local int inode_list_block_nr   = bg_desc[bg_nr].bg_inode_table_lo;
-
-    //block bitmap
-    FSeek(block_bitmap_block_nr * block_size);
-
-    SetBackColor(cLtGreen);
-    struct {
-        ubyte map[bg_block_count / 8];
-    } block_bitmap<name="Block Bitmap">;
-
-    //inode bitmap
-    FSeek(inode_bitmap_block_nr * block_size);
-
-    SetBackColor(cDkGreen);
-    struct {
-        ubyte map[inode_count / 8];
-    } inode_bitmap<name="Inode Bitmap">;
-
-    //inode list
-    FSeek(inode_list_block_nr * block_size);
-
-    SetBackColor(cLtAqua);
-
-    struct {
-        Ext4_INode inode[sb.s_inodes_per_group];
-    } Inodes<name="Inodes">;
-
-    FSeek(current_block_group_offset);
-
-} Ext4_BG<size=func_block_group_size>;
-
-int func_block_group_size(Ext4_BG &r) {
-    return block_group_size;
-}
-
-typedef struct {
-    ubyte padding[1024]<hidden=true>;
-
     local int bg;
     for (bg = 0; bg < block_group_count; bg++) {
-        Ext4_BG block_group<name="Block Group">;
-    }
+        struct {
+            local int bg_nr = bg;
 
-    
+            if (bg_nr == 0)
+                FSkip(1024);
+        
+            if (!sb.s_feature_ro_compat.RO_COMPAT_SPARSE_SUPER || bg_nr == 0 || bg_nr == 1 || (bg_nr % 3) == 0 || (bg_nr % 5) == 0 || (bg_nr % 7) == 0) {
+                SetBackColor(cLtRed);
+                Ext4_SB sb<name="Superblock">;
+            }
+                
+            //local int bg_nr = sb.s_block_group_nr;
+            local int bg_block_count = (bg_nr == (block_group_count - 1)) ? block_count - (blocks_per_group * bg_nr) : blocks_per_group;
+        
+            if (block_size <= 1024)
+                FSeek((2 * block_size) + (bg_nr * bg_desc_size)); 
+            else
+                FSeek(block_size + (bg_nr * bg_desc_size));
+           
+            SetBackColor(cLtBlue);
+            Ext4_BG_Desc bg_desc<name="Block Group Descriptor">;
+        
+            local int block_bitmap_block_nr = bg_desc.bg_block_bitmap_lo;
+            local int inode_bitmap_block_nr = bg_desc.bg_inode_bitmap_lo;
+            local int inode_list_block_nr   = bg_desc.bg_inode_table_lo;
+        
+            //block bitmap
+            FSeek(block_bitmap_block_nr * block_size);
+
+            SetBackColor(cLtGreen);
+            struct {
+                ubyte map[bg_block_count / 8];
+            } block_bitmap<name="Block Bitmap">;
+        
+            //inode bitmap
+            FSeek(inode_bitmap_block_nr * block_size);
+        
+            SetBackColor(cDkGreen);
+            struct {
+                ubyte map[inode_count / 8];
+            } inode_bitmap<name="Inode Bitmap">;
+        
+            //inode list
+            FSeek(inode_list_block_nr * block_size);
+        
+            SetBackColor(cLtAqua);
+        
+            struct {
+                Ext4_INode inode[sb.s_inodes_per_group];
+            } Inodes<name="Inodes">;
+        
+            FSeek((bg + 1) * block_group_size + (block_size <= 1024 ? 1024 : 0));
+        
+        } block_group<name="Block Group">;
+    }
 } Ext4_FS;
 
 Ext4_FS filesystem<name="Ext4 Filesystem">;
