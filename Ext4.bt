@@ -402,6 +402,33 @@ string func_read_inode_mode(__le16 mode) {
 }
 
 typedef struct {
+    __le16  eh_magic;
+
+    if (eh_magic != 0xF30A) {
+        Warning("Invalid extent header!");
+        Exit(1);
+    }
+    __le16  eh_entries;
+    __le16  eh_max;
+    __le16  eh_depth;
+    __le32  eh_generation;
+} Ext4_Extent_Header;
+
+typedef struct {
+    __le32  ei_block;
+    __le32  ei_leaf_lo;
+    __le16  ei_leaf_hi;
+    __le16  ei_unused;
+} Ext4_Extent_Index_Node;
+
+typedef struct {
+    __le32  ee_block;
+    __le16  ee_len;
+    __le16  ee_start_hi;
+    __le32  ee_start_lo;
+} Ext4_Extent_Node;
+
+typedef struct {
     __le16  i_mode<read=func_read_inode_mode>;
     __le16  i_uid;
     __le32  i_size_lo;
@@ -424,35 +451,33 @@ typedef struct {
     }
     else if (i_flags.EXT4_EXTENTS_FL) {
         struct {
-            struct {
-                __le16  eh_magic;
-    
-                if (eh_magic != 0xF30A) {
-                    Warning("Invalid extent header!");
-                    Exit(1);
-                }
-                __le16  eh_entries;
-                __le16  eh_max;
-                __le16  eh_depth;
-                __le32  eh_generation;
-            } header;
+            Ext4_Extent_Header header;
 
             if (header.eh_entries) {
                 if (header.eh_depth > 0) {
-                    struct {
-                        __le32  ei_block;
-                        __le32  ei_leaf_lo;
-                        __le16  ei_leaf_hi;
-                        __le16  ei_unused;
-                    } index_node[header.eh_entries];
+                    Ext4_Extent_Index_Node index_node[header.eh_entries];
+
+                    local int i_in = 0;
+                    local int in_current_pos = FTell();
+                    while (exists(index_node[i_in])) {
+                        FSeek(index_node[i_in].ei_leaf_lo * block_size);
+        
+                        Ext4_Extent_Header sub_header;
+
+                        if (sub_header.eh_depth > 0) {
+                            Ext4_Extent_Index_Node index_node[sub_header.eh_entries];
+                        }
+                        else {
+                            Ext4_Extent_Node extent[sub_header.eh_entries];
+                        }
+
+                        i_in++;
+                    }
+    
+                    FSeek(in_current_pos);
                 }
                 else {
-                    struct {
-                        __le32  ee_block;
-                        __le16  ee_len;
-                        __le16  ee_start_hi;
-                        __le32  ee_start_lo;
-                    } extent[header.eh_entries];
+                    Ext4_Extent_Node extent[header.eh_entries];
                 }
             }
 
