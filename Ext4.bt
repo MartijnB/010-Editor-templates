@@ -429,209 +429,290 @@ typedef struct {
 } Ext4_Extent_Node;
 
 typedef struct {
-    __le16  i_mode<read=func_read_inode_mode>;
-    __le16  i_uid;
-    __le32  i_size_lo;
-    time_t  i_atime;
-    time_t  i_ctime;
-    time_t  i_mtime;
-    time_t  i_dtime;
-    __le16  i_gid;
-    __le16  i_links_count;
-    __le32  i_blocks_lo;
-    t_inode_flags   i_flags;
-
-    local ubyte is_directory = ((i_mode & 0x4000) == 0x4000);
+    __le32 inode;
+    __le16 rec_len;
+    ubyte  name_len;
+    ubyte  file_type;
     
-    //OSD1 (Linux)
-    __le32  l_i_version; 
+    if (name_len > 0)
+        char name[name_len];
 
-    if (i_flags.EXT4_INLINE_DATA_FL) {
-        ubyte    data[60]<comment="Small file (<= 60 byte)">;
+    local int padding_size = rec_len - name_len - 8;
+
+    if (padding_size > 0)
+        ubyte padding[padding_size]<hidden=true>;
+} file_info_a<name=func_file_name_a, optimize=false>;
+
+string func_file_name_a(file_info_a &r) {
+    string s;
+
+    if (r.name_len > 0) {
+        SPrintf(s, "%s (Inode %i)", r.name, r.inode);
     }
-    else if (i_flags.EXT4_EXTENTS_FL) {
-        struct {
-            Ext4_Extent_Header header;
-
-            if (header.eh_entries) {
-                if (header.eh_depth > 0) {
-                    Ext4_Extent_Index_Node index_node[header.eh_entries];
-
-                    local int i_in = 0;
-                    local int in_current_pos = FTell();
-                    while (exists(index_node[i_in])) {
-                        FSeek(index_node[i_in].ei_leaf_lo * block_size);
-        
-                        Ext4_Extent_Header sub_header;
-
-                        if (sub_header.eh_depth > 0) {
-                            Ext4_Extent_Index_Node index_node[sub_header.eh_entries];
-                        }
-                        else {
-                            Ext4_Extent_Node extent[sub_header.eh_entries];
-                        }
-
-                        i_in++;
-                    }
-    
-                    FSeek(in_current_pos);
-                }
-                else {
-                    Ext4_Extent_Node extent[header.eh_entries];
-                }
-            }
-
-            ubyte padding[(header.eh_max - header.eh_entries) * 12]<hidden=false>;
-
-            __le32 eb_checksum;
-        } extents<size=60>;
-    } 
     else {
-        __le32  i_block_direct[12];
-        __le32  i_block_single_indir;
-        __le32  i_block_double_indir;
-        __le32  i_block_tripple_indir;
+        SPrintf(s, "<UNKNOWN> (Inode %i)", r.inode);
+    }
 
-        struct {
-            local int done = 0;
+    return s;
+}
+
+typedef struct {
+    __le32 inode;
+    __le16 rec_len;
+    __le16 name_len;
+
+    if (name_len > 0)
+        char name[name_len];
+
+    local int padding_size = rec_len - name_len - 8;
+
+    if (padding_size > 0)
+        ubyte padding[padding_size]<hidden=true>;
+} file_info_b<name=func_file_name_b, optimize=false>;
+
+string func_file_name_b(file_info_b &r) {
+    string s;
+
+    SPrintf(s, "%s (Inode %i)", r.name, r.inode);
+
+    return s;
+}
+
+typedef struct {
+    if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
+        file_info_a current_directory;
+        file_info_a parent_directory;
+    }
+    else {
+        file_info_b current_directory;
+        file_info_b parent_directory;
+    }
+
+    __le32                  reserved_zero;
+    __u8                    hash_version;
+    __u8                    info_length;
+    __u8                    indirect_levels;
+    __u8                    unused_flags;
+    __le16                  limit;
+    __le16                  count;
+    __le32                  block;
+    struct Ext4_DT_Entry    entries[count];
+} Ext4_DT_Root;
+
+typedef struct {
+    __le32  hash;
+    __le32  block;
+} Ext4_DT_Entry;
+
+typedef struct {
+    struct {
+        __le16  i_mode<read=func_read_inode_mode>;
+        __le16  i_uid;
+        __le32  i_size_lo;
+        time_t  i_atime;
+        time_t  i_ctime;
+        time_t  i_mtime;
+        time_t  i_dtime;
+        __le16  i_gid;
+        __le16  i_links_count;
+        __le32  i_blocks_lo;
+        t_inode_flags   i_flags;
         
-            local int bs4 = block_size / 4;
-            SetBackColor(cYellow);
-
-            local int end_block_addr = FTell();
-            FSeek(FTell() - (15 * 4));
+        //OSD1 (Linux)
+        __le32  l_i_version; 
     
-            local int bd_i = 0;
-            while (bd_i < 12 && i_block_direct[bd_i] > 0 ) {
-                __le32 block_nr;
-                bd_i++;
-            }
-
-            if (i_block_single_indir > 0) {
-                FSeek(i_block_single_indir * block_size);
-                local int bsi_i = 0;
-                while (bsi_i < bs4) {
-                    __le32 block_nr;
-                    if (block_nr == 0) {
-                        bsi_i = bs4;
+        if (i_flags.EXT4_INLINE_DATA_FL) {
+            ubyte    data[60]<comment="Small file (<= 60 byte)">;
+        }
+        else if (i_flags.EXT4_EXTENTS_FL) {
+            struct {
+                Ext4_Extent_Header header;
+    
+                if (header.eh_entries) {
+                    if (header.eh_depth > 0) {
+                        Ext4_Extent_Index_Node index_node[header.eh_entries];
+    
+                        local int i_in = 0;
+                        local int in_current_pos = FTell();
+                        while (exists(index_node[i_in])) {
+                            FSeek(index_node[i_in].ei_leaf_lo * block_size);
+            
+                            Ext4_Extent_Header sub_header;
+    
+                            if (sub_header.eh_depth > 0) {
+                                Ext4_Extent_Index_Node index_node[sub_header.eh_entries];
+                            }
+                            else {
+                                Ext4_Extent_Node extent[sub_header.eh_entries];
+                            }
+    
+                            i_in++;
+                        }
+        
+                        FSeek(in_current_pos);
                     }
-                    bsi_i++;
+                    else {
+                        Ext4_Extent_Node extent[header.eh_entries];
+                    }
                 }
-            }
-            else {
-                done = 1;
-            }
-
-            if (!done && i_block_double_indir > 0) {
-                FSeek(i_block_double_indir * block_size);
-                __le32 double_indir[bs4]<hidden=true>;
-                local int bdi_x;
-                local int bdi_i = 0;
-                while ( bdi_i < bs4 && double_indir[bdi_i] > 0) {
-                    FSeek(double_indir[bdi_i] * block_size);
-                    bdi_x = 0;
-                    while (bdi_x < bs4) {
+    
+                ubyte padding[(header.eh_max - header.eh_entries) * 12]<hidden=false>;
+    
+                __le32 eb_checksum;
+            } extents<size=60>;
+        } 
+        else {
+            __le32  i_block_direct[12];
+            __le32  i_block_single_indir;
+            __le32  i_block_double_indir;
+            __le32  i_block_tripple_indir;
+    
+            struct {
+                local int done = 0;
+            
+                local int bs4 = block_size / 4;
+                SetBackColor(cYellow);
+    
+                local int end_block_addr = FTell();
+                FSeek(FTell() - (15 * 4));
+        
+                local int bd_i = 0;
+                while (bd_i < 12 && i_block_direct[bd_i] > 0 ) {
+                    __le32 block_nr;
+                    bd_i++;
+                }
+    
+                if (i_block_single_indir > 0) {
+                    FSeek(i_block_single_indir * block_size);
+                    local int bsi_i = 0;
+                    while (bsi_i < bs4) {
                         __le32 block_nr;
                         if (block_nr == 0) {
-                            bdi_x = bs4;
+                            bsi_i = bs4;
                         }
-                        bdi_x++;
+                        bsi_i++;
                     }
-                    bdi_i++;
                 }
-            }
-            else {
-                done = 1;
-            }
+                else {
+                    done = 1;
+                }
+    
+                if (!done && i_block_double_indir > 0) {
+                    FSeek(i_block_double_indir * block_size);
+                    __le32 double_indir[bs4]<hidden=true>;
+                    local int bdi_x;
+                    local int bdi_i = 0;
+                    while ( bdi_i < bs4 && double_indir[bdi_i] > 0) {
+                        FSeek(double_indir[bdi_i] * block_size);
+                        bdi_x = 0;
+                        while (bdi_x < bs4) {
+                            __le32 block_nr;
+                            if (block_nr == 0) {
+                                bdi_x = bs4;
+                            }
+                            bdi_x++;
+                        }
+                        bdi_i++;
+                    }
+                }
+                else {
+                    done = 1;
+                }
+    
+                // Tripple Indir is too resource intensive for 010Editor
+    
+                //if (i_block_tripple_indir > 0) {
+                //    FSeek(i_block_tripple_indir * block_size);
+                //    __le32 tripple_indir[bs4]<hidden=true>;
+                //    local int bti_x;
+                //    local int bti_y;
+                //    local int bti_i = 0;
+                //    while ( bti_i < bs4 && tripple_indir[bti_i] > 0) {
+                //        FSeek(tripple_indir[bti_i] * block_size);
+                //        __le32 second_double[bs4]<hidden=true>;
+                //        bti_x = 0;
+                //        while ( bti_x < bs4 && second_double[bti_x] > 0) {
+                //            FSeek(second_double[bti_x] * block_size);
+                //            bti_y = 0;
+                //            while ( bti_y < bs4 ) {
+                //                __le32 blocks;
+                //                if (blocks == 0) {
+                //                    bti_y = bs4;
+                //                }
+                //                bti_y++;
+                //            }
+                //            bdi_x++;
+                //        }                                
+                //        bti_i++;
+                //    }    
+                //}
+                    
+                FSeek(end_block_addr);
+            } blocks<name="Blocks">;
+        }
+    
+        __le32  i_generation;
+        __le32  i_file_acl_lo;
+        __le32  i_size_high; // Ext2/3: i_dir_acl;
+        __le32  i_obso_faddr;
+    
+        //OSD2 (linux fields; 12 byte)
+        __le16  l_i_blocks_high;
+        __le16  l_i_file_acl_high;
+        __le16  l_i_uid_high;
+        __le16  l_i_gid_high;
+        __le16  l_i_checksum_lo;
+        __le16  l_i_reserved;
+    
+        if (sb.s_inode_size > 128) {
+            __le16  i_extra_isize;
+            __le16  i_checksum_hi;
+            time_t  i_ctime_extra;
+            time_t  i_mtime_extra;
+            time_t  i_atime_extra;
+            time_t  i_crtime;
+            time_t  i_crtime_extra;
+            __le32  i_version_hi;
+        }
+    } metadata<name="Metadata">;
 
-            // Tripple Indir is too resource intensive for 010Editor
+    local ubyte is_directory = ((metadata.i_mode & 0x4000) == 0x4000);
 
-            //if (i_block_tripple_indir > 0) {
-            //    FSeek(i_block_tripple_indir * block_size);
-            //    __le32 tripple_indir[bs4]<hidden=true>;
-            //    local int bti_x;
-            //    local int bti_y;
-            //    local int bti_i = 0;
-            //    while ( bti_i < bs4 && tripple_indir[bti_i] > 0) {
-            //        FSeek(tripple_indir[bti_i] * block_size);
-            //        __le32 second_double[bs4]<hidden=true>;
-            //        bti_x = 0;
-            //        while ( bti_x < bs4 && second_double[bti_x] > 0) {
-            //            FSeek(second_double[bti_x] * block_size);
-            //            bti_y = 0;
-            //            while ( bti_y < bs4 ) {
-            //                __le32 blocks;
-            //                if (blocks == 0) {
-            //                    bti_y = bs4;
-            //                }
-            //                bti_y++;
-            //            }
-            //            bdi_x++;
-            //        }                                
-            //        bti_i++;
-            //    }    
-            //}
-                
-            FSeek(end_block_addr);
-        } blocks<name="Blocks">;
-    }
-
-    __le32  i_generation;
-    __le32  i_file_acl_lo;
-    __le32  i_size_high; // Ext2/3: i_dir_acl;
-    __le32  i_obso_faddr;
-
-    //OSD2 (linux fields; 12 byte)
-    __le16  l_i_blocks_high;
-    __le16  l_i_file_acl_high;
-    __le16  l_i_uid_high;
-    __le16  l_i_gid_high;
-    __le16  l_i_checksum_lo;
-    __le16  l_i_reserved;
-
-    if (sb.s_inode_size > 128) {
-        __le16  i_extra_isize;
-        __le16  i_checksum_hi;
-        time_t  i_ctime_extra;
-        time_t  i_mtime_extra;
-        time_t  i_atime_extra;
-        time_t  i_crtime;
-        time_t  i_crtime_extra;
-        __le32  i_version_hi;
-    }
-
-    if (is_directory && i_size_lo > 0) {
+    if (is_directory && metadata.i_size_lo > 0) {
         typedef struct (int size) {
             ubyte data[size];
         } data_block<name="Block">;
-    
+
         //extent data
-        if (i_flags.EXT4_EXTENTS_FL && extents.header.eh_entries) {
+        if (metadata.i_flags.EXT4_EXTENTS_FL && metadata.extents.header.eh_entries) {
             struct {
                 local int i_current_pos = FTell();
     
                 local int ex_i = 0;
                 local int ex_d_i = 0;
+                local int db_i;
     
                 local uint64 start_block_hi;
                 local uint64 start_block_lo;
                 local uint64 start_block;
     
                 local int length;
-                for (ex_i = 0; exists(extents.extent[ex_i]); ex_i++) {
-                    start_block_hi = extents.extent[ex_i].ee_start_hi;
-                    start_block_lo = extents.extent[ex_i].ee_start_lo;
+
+                for (ex_i = 0; exists(metadata.extents.extent[ex_i]); ex_i++) {
+                    start_block_hi = metadata.extents.extent[ex_i].ee_start_hi;
+                    start_block_lo = metadata.extents.extent[ex_i].ee_start_lo;
             
-                    //start_block = start_block_hi << 32 + start_block_lo;
                     start_block = start_block_lo;
             
-                    length = extents.extent[ex_i].ee_len;
+                    length = metadata.extents.extent[ex_i].ee_len;
                     if (length > 32768) // Extent is not initialized
                         length = length - 32768;
                         
                     FSeek(start_block * block_size);
-    
-                    data_block data(length * block_size);
+                    
+                    for (db_i = 0; db_i < length; db_i++) {
+                        data_block data(block_size);
+                    }
                 }
         
                 FSeek(i_current_pos);
@@ -679,92 +760,80 @@ typedef struct {
             } data<name="Data">;
         }
 
-        if (i_flags.EXT4_INDEX_FL) {
-        }
-        else if(exists(data.data[0])) {
-            local int current_pos_dir_ent = FTell();
+        local int current_pos_dir_ent = FTell();
 
-            FSeek(startof(data.data[0]));
+        if (exists(data.data[0])) {
+            local int db_i = 0;
 
-            struct {
-                local int read_dir_ent_size = 0;
-                while (read_dir_ent_size < i_size_lo) {
-                    if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
-                        typedef struct {
-                            __le32 inode;
-                            __le16 rec_len;
-                            ubyte  name_len;
-                            ubyte  file_type;
-                            
-                            if (name_len > 0)
-                                char name[name_len];
-    
-                            read_dir_ent_size += rec_len;
-    
-                            local int padding_size = rec_len - name_len - 8;
-        
-                            if (padding_size > 0)
-                                ubyte padding[padding_size]<hidden=true>;
-                        } file_info_a<name=func_file_name_a, optimize=false>;
+            FSeek(startof(data.data[db_i++]));
 
-                        file_info_a file_info;
-                    }
-                    else {
-                        typedef struct {
-                            __le32 inode;
-                            __le16 rec_len;
-                            __le16 name_len;
+            if (metadata.i_flags.EXT4_INDEX_FL) {
+                Ext4_DT_Root dt_root;
     
-                            if (name_len > 0)
-                                char name[name_len];
-    
-                            read_dir_ent_size += rec_len;
-    
-                            local int padding_size = rec_len - name_len - 8;
-        
-                            if (padding_size > 0)
-                                ubyte padding[padding_size]<hidden=true>;
-                        } file_info_b<name=func_file_name_b, optimize=false>;
-
-                        file_info_b file_info;
-                    }
+                if (dt_root.indirect_levels > 0) {
+                    
                 }
-            } files<name="Files">;
+                
+                struct {
+                    local int fi_p = 0;
+                    local int read_dir_ent_size;
 
-            FSeek(current_pos_dir_ent);
+                    while(exists(data.data[db_i])) {
+                        read_dir_ent_size = 0;
+
+                        FSeek(startof(data.data[db_i]));
+                        
+                        while (read_dir_ent_size < metadata.i_size_lo) {
+                            if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
+                                file_info_a file_info;
+                            }
+                            else {
+                                file_info_b file_info;
+                            }
+    
+                            read_dir_ent_size += file_info[fi_p++].rec_len;
+                        }
+    
+                        db_i++;
+                    }
+                } files<name="Files">;
+            }
+            else  {
+                struct {
+                    local int read_dir_ent_size = 0;
+                    local int fi_p = 0;
+
+                    while (read_dir_ent_size < metadata.i_size_lo && fi_p < metadata.i_links_count) {
+                        if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
+                            file_info_a file_info;
+                        }
+                        else {
+                            file_info_b file_info;
+                        }
+
+                        read_dir_ent_size += file_info[fi_p++].rec_len;
+                    }
+                } files<name="Files">;
+            }
         }
+
+        FSeek(current_pos_dir_ent);
     }
 } Ext4_INode<name=func_inode_name, size=func_inode_size, optimize=false>;
 
-string func_file_name_a(file_info_a &r) {
-    string s;
-
-    SPrintf(s, "%s (Inode %i)", r.name, r.inode);
-
-    return s;
-}
-
-string func_file_name_b(file_info_b &r) {
-    string s;
-
-    SPrintf(s, "%s (Inode %i)", r.name, r.inode);
-
-    return s;
-}
-
 string func_inode_name(Ext4_INode &r) {
     local string s;
-    local int mode = r.i_mode;
+    local int mode = r.metadata.i_mode;
 
     if (mode == 0)
         return "Unused";
 
     s += func_read_inode_mode(mode);
 
-    if (r.i_flags.EXT4_INLINE_DATA_FL) {
+    if (r.metadata.i_flags.EXT4_INLINE_DATA_FL) {
         s += " INLINE";
     }
-    else if (r.i_flags.EXT4_EXTENTS_FL) {
+    else if (r.metadata.i_flags.EXT4_EXTENTS_FL) {
         s += " Extents";
     }
     else {
@@ -773,7 +842,7 @@ string func_inode_name(Ext4_INode &r) {
 
     // Directory
     if ((mode & 0x4000) == 0x4000) {
-        if (r.i_flags.EXT4_INDEX_FL) {
+        if (r.metadata.i_flags.EXT4_INDEX_FL) {
             s += " HTree";
         }
         else {
@@ -781,7 +850,7 @@ string func_inode_name(Ext4_INode &r) {
         }
     }
 
-    SPrintf(s, "%s %ib", s, r.i_size_lo);
+    SPrintf(s, "%s %ib", s, r.metadata.i_size_lo);
     
     return s;
 }
