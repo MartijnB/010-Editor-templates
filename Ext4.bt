@@ -722,36 +722,36 @@ typedef struct {
             struct {
                 local int i_current_pos = FTell();
     
-                local int block_count = i_blocks_lo - 1;
+                local int block_count = metadata.i_blocks_lo - 1;
                 local int block_p = 0;
                 local int block_first = -1;
                 local int block_last = -1;
     
                 if (block_count > 1) {
-                    while (block_p < block_count && exists(blocks.block_nr[block_p]))  {
-                        if (block_first != -1 && block_last != (blocks.block_nr[block_p] -1)) {
+                    while (block_p < block_count && exists(metadata.blocks.block_nr[block_p]))  {
+                        if (block_first != -1 && block_last != (metadata.blocks.block_nr[block_p] -1)) {
                             FSeek(block_first * block_size);
     
                             if ((block_last - block_first) >= 0) {
                                 data_block data(((block_last - block_first) + 1) * block_size);
                             }
         
-                            block_first = blocks.block_nr[block_p];
-                            block_last = blocks.block_nr[block_p];
+                            block_first = metadata.blocks.block_nr[block_p];
+                            block_last = metadata.blocks.block_nr[block_p];
                         }
                         else {
                             if (block_first == -1) {
-                                block_first = blocks.block_nr[block_p];
+                                block_first = metadata.blocks.block_nr[block_p];
                             }
         
-                            block_last = blocks.block_nr[block_p];
+                            block_last = metadata.blocks.block_nr[block_p];
                         }
         
                         block_p += 1;
                     }
                 }
                 else if (block_count == 1) {
-                    FSeek(blocks.block_nr * block_size);
+                    FSeek(metadata.blocks.block_nr * block_size);
     
                     data_block data(block_size);
                 }
