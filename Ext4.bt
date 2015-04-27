@@ -763,9 +763,7 @@ typedef struct {
         local int current_pos_dir_ent = FTell();
 
         if (exists(data.data[0])) {
-            local int db_i = 0;
-
-            FSeek(startof(data.data[db_i++]));
+            FSeek(startof(data.data[0]));
 
             if (metadata.i_flags.EXT4_INDEX_FL) {
                 Ext4_DT_Root dt_root;
@@ -775,6 +773,7 @@ typedef struct {
                 }
                 
                 struct {
+                    local int db_i = 1;
                     local int fi_p = 0;
                     local int read_dir_ent_size;
 
