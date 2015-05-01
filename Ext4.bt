@@ -802,7 +802,7 @@ typedef struct {
                     local int read_dir_ent_size = 0;
                     local int fi_p = 0;
 
-                    while (read_dir_ent_size < metadata.i_size_lo && fi_p < metadata.i_links_count) {
+                    while (read_dir_ent_size < metadata.i_size_lo) {
                         if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
                             file_info_a file_info;
                         }
@@ -811,6 +811,16 @@ typedef struct {
                         }
 
                         read_dir_ent_size += file_info[fi_p++].rec_len;
+
+                        // Skip empty entries
+                        while (ReadUInt(FTell()) == 0 && ReadUByte(FTell() + 6) == 0) {
+                            local int rec_size = ReadUShort(FTell() + 4);
+
+                            FSkip(rec_size);
+
+                            read_dir_ent_size += rec_size;
+                        }
+                        
                     }
                 } files<name="Files">;
             }
