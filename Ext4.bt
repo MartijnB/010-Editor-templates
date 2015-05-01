@@ -858,6 +858,16 @@ int func_inode_size(Ext4_INode &r) {
     return sb.s_inode_size;
 }
 
+int isPowerOfP(int n, int p) {
+    if (n == 0)
+        return 0;
+
+    while (n % p == 0) {
+        n /= p;
+    }
+    return n == 1;
+}
+
 typedef struct {
     local int bg;
     for (bg = 0; bg < block_group_count; bg++) {
@@ -867,7 +877,7 @@ typedef struct {
             if (bg_nr == 0)
                 FSkip(1024);
         
-            if (!sb.s_feature_ro_compat.RO_COMPAT_SPARSE_SUPER || bg_nr == 0 || bg_nr == 1 || (bg_nr % 3) == 0 || (bg_nr % 5) == 0 || (bg_nr % 7) == 0) {
+            if (!sb.s_feature_ro_compat.RO_COMPAT_SPARSE_SUPER || bg_nr == 0 || bg_nr == 1 || isPowerOfP(bg_nr, 3) || isPowerOfP(bg_nr, 5) || isPowerOfP(bg_nr, 7)) {
                 SetBackColor(cLtRed);
                 Ext4_SB sb<name="Superblock">;
             }
