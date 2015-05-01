@@ -678,7 +678,7 @@ typedef struct {
 
     local ubyte is_directory = ((metadata.i_mode & 0x4000) == 0x4000);
 
-    if (is_directory && metadata.i_size_lo > 0) {
+    if (metadata.i_size_lo > 0 && (is_directory || metadata.i_size_lo < (1 * 1024 * 1024))) {
         typedef struct (int size) {
             ubyte data[size];
         } data_block<name="Block">;
@@ -726,6 +726,8 @@ typedef struct {
                 local int block_p = 0;
                 local int block_first = -1;
                 local int block_last = -1;
+
+                local int db_i;
     
                 if (block_count > 1) {
                     while (block_p < block_count && exists(metadata.blocks.block_nr[block_p]))  {
@@ -733,7 +735,9 @@ typedef struct {
                             FSeek(block_first * block_size);
     
                             if ((block_last - block_first) >= 0) {
-                                data_block data(((block_last - block_first) + 1) * block_size);
+                                for (db_i = 0; db_i < ((block_last - block_first) + 1); db_i++) {
+                                    data_block data(block_size);
+                                }
                             }
         
                             block_first = metadata.blocks.block_nr[block_p];
@@ -759,7 +763,9 @@ typedef struct {
                 FSeek(i_current_pos);
             } data<name="Data">;
         }
+    }
 
+    if (is_directory) {
         local int current_pos_dir_ent = FTell();
 
         if (exists(data.data[0])) {
@@ -814,7 +820,7 @@ typedef struct {
                         read_dir_ent_size += file_info[fi_p++].rec_len;
 
                         // Skip empty entries
-                        while (ReadUInt(FTell()) == 0 && ReadUByte(FTell() + 6) == 0) {
+                        while (read_dir_ent_size < metadata.i_size_lo && ReadUInt(FTell()) == 0 && ReadUByte(FTell() + 6) == 0 && ReadUShort(FTell() + 4) > 0) {
                             rec_size = ReadUShort(FTell() + 4);
 
                             FSkip(rec_size);
