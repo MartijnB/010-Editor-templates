@@ -801,6 +801,7 @@ typedef struct {
                 struct {
                     local int read_dir_ent_size = 0;
                     local int fi_p = 0;
+                    local int rec_size = 0;
 
                     while (read_dir_ent_size < metadata.i_size_lo) {
                         if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
@@ -814,7 +815,7 @@ typedef struct {
 
                         // Skip empty entries
                         while (ReadUInt(FTell()) == 0 && ReadUByte(FTell() + 6) == 0) {
-                            local int rec_size = ReadUShort(FTell() + 4);
+                            rec_size = ReadUShort(FTell() + 4);
 
                             FSkip(rec_size);
 
