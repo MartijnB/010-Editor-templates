@@ -902,7 +902,7 @@ typedef struct {
 
             SetBackColor(cLtGreen);
             struct {
-                ubyte map[bg_block_count / 8];
+                ubyte map[bg_block_count / 8]<format=binary>;
             } block_bitmap<name="Block Bitmap">;
         
             //inode bitmap
@@ -910,7 +910,7 @@ typedef struct {
         
             SetBackColor(cDkGreen);
             struct {
-                ubyte map[inode_count / 8];
+                ubyte map[inode_count / 8]<format=binary>;
             } inode_bitmap<name="Inode Bitmap">;
         
             //inode list
