@@ -479,14 +479,7 @@ string func_file_name_b(file_info_b &r) {
 }
 
 typedef struct {
-    if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
-        file_info_a current_directory;
-        file_info_a parent_directory;
-    }
-    else {
-        file_info_b current_directory;
-        file_info_b parent_directory;
-    }
+    ubyte                   legacy[24]<hidden=true>;
 
     __le32                  reserved_zero;
     __u8                    hash_version;
@@ -502,7 +495,15 @@ typedef struct {
 typedef struct {
     __le32  hash;
     __le32  block;
-} Ext4_DT_Entry;
+} Ext4_DT_Entry<read=func_ext4_dt_entry>;
+
+string func_ext4_dt_entry(Ext4_DT_Entry& r) {
+    string s;
+
+    SPrintf(s, "%u -> Inode %i", r.hash, r.block);
+
+    return s;
+}
 
 typedef struct {
     struct {
