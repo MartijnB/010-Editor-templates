@@ -790,6 +790,9 @@ typedef struct {
                         FSeek(startof(data.data[db_i]));
                         
                         while (read_dir_ent_size < metadata.i_size_lo) {
+                            if (ReadUShort(FTell() + 4) == 0)
+                                break;
+
                             if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
                                 file_info_a file_info;
                             }
@@ -797,9 +800,6 @@ typedef struct {
                                 file_info_b file_info;
                             }
 
-                            if (!file_info[fi_p++].rec_len)
-                                break;
-    
                             read_dir_ent_size += file_info[fi_p++].rec_len;
                         }
     
