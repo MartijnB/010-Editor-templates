@@ -796,6 +796,9 @@ typedef struct {
                             else {
                                 file_info_b file_info;
                             }
+
+                            if (!file_info[fi_p++].rec_len)
+                                break;
     
                             read_dir_ent_size += file_info[fi_p++].rec_len;
                         }
@@ -811,6 +814,9 @@ typedef struct {
                     local int rec_size = 0;
 
                     while (read_dir_ent_size < metadata.i_size_lo) {
+                        if (ReadUShort(FTell() + 4) == 0)
+                            break;
+
                         if (sb.s_feature_incompat.INCOMPAT_FILETYPE) {
                             file_info_a file_info;
                         }
@@ -821,8 +827,11 @@ typedef struct {
                         read_dir_ent_size += file_info[fi_p++].rec_len;
 
                         // Skip empty entries
-                        while (read_dir_ent_size < metadata.i_size_lo && ReadUInt(FTell()) == 0 && ReadUByte(FTell() + 6) == 0 && ReadUShort(FTell() + 4) > 0) {
+                        while (false && read_dir_ent_size < metadata.i_size_lo && ReadUInt(FTell()) == 0 && ReadUByte(FTell() + 6) == 0 && ReadUShort(FTell() + 4) > 0) {
                             rec_size = ReadUShort(FTell() + 4);
+
+                            if (!rec_size)
+                                break;
 
                             FSkip(rec_size);
 
