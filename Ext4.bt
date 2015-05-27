@@ -154,7 +154,7 @@ typedef struct {
     __le32              s_r_blocks_count_lo;
     __le32              s_free_blocks_count_lo;
     __le32              s_free_inodes_count;
-    __le32              s_first_data_blockÏ;
+    __le32              s_first_data_block;
     __le32              s_log_block_size;
     __le32              s_log_cluster_size;
     __le32              s_blocks_per_group;
